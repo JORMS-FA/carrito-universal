@@ -1,0 +1,6 @@
+{
+  "name": "ShopWise",
+  "description": "Herramienta inteligente de deseos y compras, con diseño One UI, resúmenes IA de productos, comparador detallado y exportación a Markdown.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
