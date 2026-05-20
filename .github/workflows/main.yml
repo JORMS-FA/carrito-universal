@@ -29,6 +29,14 @@ jobs:
             echo "GEMINI_API_KEY=dummy_value_for_workflow_compilation" > .env
           fi
 
+      - name: Decode Debug Keystore
+        run: |
+          if [ -f debug.keystore.base64 ]; then
+            base64 -d debug.keystore.base64 > debug.keystore
+          else
+            echo "Warning: debug.keystore.base64 not found"
+          fi
+
       - name: Setup Gradle 9.3.1
         uses: gradle/actions/setup-gradle@v4
         with:
