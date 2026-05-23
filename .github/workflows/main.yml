@@ -1,4 +1,4 @@
-name: Compile ShopWise APK
+name: Compilar APK Carrito Universal 📦
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    name: Build ShopWise App
+    name: Compilación APK Carrito Universal 📦
     runs-on: ubuntu-latest
 
     steps:
