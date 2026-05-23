@@ -16,3 +16,8 @@
 local.properties
 .env
 debug.keystore
+
+# Compiled APK / AAB outputs — never track binaries in Git
+*.apk
+*.aab
+.build-outputs/
