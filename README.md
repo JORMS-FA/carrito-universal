@@ -1,4 +1,4 @@
-# ShopWise 🛍️✨ EL  UEVO NOMBRE DEL PROYECTO VA HACER CARRITO UNIVERSAL
+# ShopWise 🛍️✨ EL NUEVO NOMBRE DEL PROYECTO SERÁ CARRITO UNIVERSAL
 
 **ShopWise** es una aplicación móvil Android nativa moderna, limpia, de alto rendimiento y visualmente inspirada en la interfaz **Samsung One UI**. Está diseñada para ayudarte a tomar decisiones inteligentes antes de comprar en línea analizando productos mediante Inteligencia Artificial (Google Gemini API), organizando tus deseos por prioridad en la base de datos Room y permitiéndote comparar ofertas y programar alarmas de recordatorio de forma totalmente sin esfuerzo.
 

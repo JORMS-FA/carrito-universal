@@ -30,7 +30,6 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-          cache: gradle
 
       - name: Create fallback .env file
         run: |
@@ -53,6 +52,8 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: "9.3.1"
+          cache-provider: basic
+          cache-cleanup: never
 
       - name: Build release APK
         run: gradle :app:assembleRelease --no-daemon
@@ -78,7 +79,6 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-          cache: gradle
 
       - name: Create fallback .env file
         run: |
@@ -98,6 +98,8 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: "9.3.1"
+          cache-provider: basic
+          cache-cleanup: never
 
       - name: Build debug APK
         run: gradle :app:assembleDebug --no-daemon
@@ -117,7 +119,7 @@ jobs:
 
     steps:
       - name: Download release APK artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: shopwise-release-apk
           path: dist
