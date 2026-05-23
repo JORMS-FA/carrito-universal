@@ -1,27 +1,36 @@
-name: Compilar APK Carrito Universal 📦
+name: Compilar y publicar APK Carrito Universal
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main", "master" ]
+    branches: ["main"]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  build:
-    name: Compilación APK Carrito Universal 📦
+  build-release:
+    name: Build Release APK
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
 
+    env:
+      KEYSTORE_PATH: ${{ github.workspace }}/my-upload-key.jks
+      STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+      KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v6
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
-          distribution: 'temurin'
-          java-version: '21'
-          cache: 'gradle'
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
 
       - name: Create fallback .env file
         run: |
@@ -29,7 +38,55 @@ jobs:
             echo "GEMINI_API_KEY=dummy_value_for_workflow_compilation" > .env
           fi
 
-      - name: Decode Debug Keystore
+      - name: Validate release secrets
+        run: |
+          if [ -z "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" ] || [ -z "${STORE_PASSWORD}" ] || [ -z "${KEY_PASSWORD}" ]; then
+            echo "Missing release signing secrets. Configure RELEASE_KEYSTORE_BASE64, RELEASE_STORE_PASSWORD and RELEASE_KEY_PASSWORD."
+            exit 1
+          fi
+
+      - name: Decode release keystore
+        run: |
+          echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 -d > "${KEYSTORE_PATH}"
+
+      - name: Setup Gradle 9.3.1
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: "9.3.1"
+
+      - name: Build release APK
+        run: gradle :app:assembleRelease --no-daemon
+
+      - name: Upload release APK artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: shopwise-release-apk
+          path: app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
+
+  build-debug:
+    name: Build Debug APK
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Create fallback .env file
+        run: |
+          if [ ! -f .env ]; then
+            echo "GEMINI_API_KEY=dummy_value_for_workflow_compilation" > .env
+          fi
+
+      - name: Decode debug keystore
         run: |
           if [ -f debug.keystore.base64 ]; then
             base64 -d debug.keystore.base64 > debug.keystore
@@ -38,15 +95,39 @@ jobs:
           fi
 
       - name: Setup Gradle 9.3.1
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6
         with:
-          gradle-version: '9.3.1'
+          gradle-version: "9.3.1"
 
-      - name: Build Debug APK
+      - name: Build debug APK
         run: gradle :app:assembleDebug --no-daemon
 
-      - name: Upload Debug APK Artifact
-        uses: actions/upload-artifact@v4
+      - name: Upload debug APK artifact
+        uses: actions/upload-artifact@v7
         with:
           name: shopwise-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+  publish-release:
+    name: Publish GitHub Release
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    needs: build-release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download release APK artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: shopwise-release-apk
+          path: dist
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          name: Carrito Universal v1.0.${{ github.run_number }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: dist/app-release.apk
