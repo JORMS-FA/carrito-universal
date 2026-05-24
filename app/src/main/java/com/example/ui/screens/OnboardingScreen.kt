@@ -73,7 +73,7 @@ fun OnboardingScreen(onNavigateToLogin: () -> Unit) {
                 ) {
                     Icon(
                         imageVector = Icons.Default.ShoppingCart,
-                        contentDescription = "ShopWise Logo",
+                        contentDescription = "Carrito Universal Logo",
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(40.dp)
                     )
@@ -82,11 +82,11 @@ fun OnboardingScreen(onNavigateToLogin: () -> Unit) {
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
-                    text = "ShopWise",
+                    text = "Carrito Universal",
                     fontSize = 36.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground,
-                    letterSpacing = (-1).sp
+                    letterSpacing = 0.sp
                 )
 
                 Text(

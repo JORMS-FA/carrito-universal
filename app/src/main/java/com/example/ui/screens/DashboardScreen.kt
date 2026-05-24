@@ -41,7 +41,8 @@ fun DashboardScreen(
     viewModel: ShoppingViewModel,
     onNavigateToAdd: () -> Unit,
     onNavigateToDetail: (Int) -> Unit,
-    onNavigateToCompare: () -> Unit
+    onNavigateToCompare: () -> Unit,
+    onOpenSettings: () -> Unit
 ) {
     val products by viewModel.allUserProducts.collectAsState(initial = emptyList())
     val userSession by viewModel.currentUser.collectAsState()
@@ -111,19 +112,28 @@ fun DashboardScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp, vertical = 20.dp)
             ) {
-                Text(
-                    text = "Hola, ${userSession?.displayName?.substringBefore(" ") ?: "Comprador"}",
-                    fontSize = 15.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontWeight = FontWeight.Medium
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Hola, ${userSession?.displayName?.substringBefore(" ") ?: "Comprador"}",
+                        fontSize = 15.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.Medium
+                    )
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(Icons.Default.AccountCircle, contentDescription = "Ajustes")
+                    }
+                }
                 
                 Text(
-                    text = "Mis Deseos",
+                    text = "Mis deseos",
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground,
-                    letterSpacing = (-1).sp
+                    letterSpacing = 0.sp
                 )
 
                 // Bento Layout Quick Stats
@@ -159,8 +169,8 @@ fun DashboardScreen(
                             )
                             Column {
                                 Text(
-                                    text = String.format(Locale.getDefault(), "%s %.2f", activeCurrency, totalPendingValue),
-                                    fontSize = 20.sp,
+                                    text = String.format(Locale.getDefault(), "%s %,.0f", activeCurrency, totalPendingValue),
+                                    fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary,
                                     maxLines = 1,
@@ -207,7 +217,7 @@ fun DashboardScreen(
                                         letterSpacing = 0.5.sp
                                     )
                                     Text(
-                                        text = "$priorityCount Items",
+                                        text = "$priorityCount",
                                         fontSize = 15.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.onBackground
@@ -250,7 +260,7 @@ fun DashboardScreen(
                                         letterSpacing = 0.5.sp
                                     )
                                     Text(
-                                        text = "$totalProductsCount Items",
+                                        text = "$totalProductsCount",
                                         fontSize = 15.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.onBackground

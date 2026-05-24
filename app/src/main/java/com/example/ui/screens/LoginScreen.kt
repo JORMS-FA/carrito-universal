@@ -1,47 +1,80 @@
 package com.example.ui.screens
 
 import android.widget.Toast
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideInVertically
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.NavigateNext
+import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
-import com.example.util.SessionManager
+import com.example.ui.viewmodel.AuthUiState
+import com.example.ui.viewmodel.ShoppingViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(sessionManager: SessionManager, onLoginSuccess: () -> Unit) {
+fun LoginScreen(viewModel: ShoppingViewModel, onLoginSuccess: () -> Unit) {
     val context = LocalContext.current
-    var isCustomUserFormVisible by remember { mutableStateOf(false) }
-    var customEmail by remember { mutableStateOf("") }
-    var customName by remember { mutableStateOf("") }
+    val authState by viewModel.authState.collectAsState()
+    var isCreatingAccount by remember { mutableStateOf(false) }
+    var displayName by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    val isLoading = authState is AuthUiState.Loading
 
-    val mockAccounts = listOf(
-        Triple("jormancamilof3@gmail.com", "Jorman Camilo", "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"),
-        Triple("demo.shopwise@gmail.com", "Demo User", "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150")
-    )
+    LaunchedEffect(authState) {
+        when (val state = authState) {
+            is AuthUiState.Success -> {
+                Toast.makeText(context, "Sesion iniciada", Toast.LENGTH_SHORT).show()
+                viewModel.clearAuthState()
+                onLoginSuccess()
+            }
+            is AuthUiState.Error -> {
+                Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
+                viewModel.clearAuthState()
+            }
+            else -> Unit
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -52,7 +85,6 @@ fun LoginScreen(sessionManager: SessionManager, onLoginSuccess: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // Upper Area (Gigantic title layout in One UI style)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -60,14 +92,14 @@ fun LoginScreen(sessionManager: SessionManager, onLoginSuccess: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Iniciar Sesión",
+                text = "Carrito Universal",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
             )
             Spacer(modifier = Modifier.height(12.dp))
             Text(
-                text = "Usa tu cuenta de Google para sincronizar y organizar tus deseos de compra de forma segura.",
+                text = "Sincroniza tus productos con Supabase o entra como invitado para guardar todo solo en este dispositivo.",
                 fontSize = 15.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -75,7 +107,6 @@ fun LoginScreen(sessionManager: SessionManager, onLoginSuccess: () -> Unit) {
             )
         }
 
-        // Inner Chooser / Content Area
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -87,166 +118,130 @@ fun LoginScreen(sessionManager: SessionManager, onLoginSuccess: () -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                if (!isCustomUserFormVisible) {
-                    Text(
-                        text = "Elige una cuenta de Google",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp),
-                        textAlign = TextAlign.Start
-                    )
+                Text(
+                    text = if (isCreatingAccount) "Crear cuenta sincronizada" else "Iniciar sesion",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
 
-                    // Account selections list
-                    mockAccounts.forEach { (email, name, imgUrl) ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp)
-                                .clip(RoundedCornerShape(20.dp))
-                                .background(MaterialTheme.colorScheme.surface)
-                                .clickable {
-                                    sessionManager.login(email, name, imgUrl)
-                                    Toast.makeText(context, "Sesión iniciada como $name", Toast.LENGTH_SHORT).show()
-                                    onLoginSuccess()
-                                }
-                                .padding(14.dp)
-                                .testTag("account_row_${email.replace("@", "_")}"),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            AsyncImage(
-                                model = imgUrl,
-                                contentDescription = "Avatar de $name",
-                                modifier = Modifier
-                                    .size(44.dp)
-                                    .clip(CircleShape),
-                                contentScale = ContentScale.Crop
-                            )
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = name,
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onBackground
-                                )
-                                Text(
-                                    text = email,
-                                    fontSize = 13.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            Icon(
-                                imageVector = Icons.Default.NavigateNext,
-                                contentDescription = "Acceder",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    TextButton(
-                        onClick = { isCustomUserFormVisible = true },
-                        modifier = Modifier.testTag("use_different_account_button")
-                    ) {
-                        Text("Usar otra cuenta de Google")
-                    }
-                } else {
-                    // Custom Profile Input Form
-                    Text(
-                        text = "Añadir Cuenta de Google",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp),
-                        textAlign = TextAlign.Start
-                    )
-
+                if (isCreatingAccount) {
                     OutlinedTextField(
-                        value = customName,
-                        onValueChange = { customName = it },
-                        label = { Text("Nombre Completo") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 12.dp)
-                            .testTag("login_name_input"),
-                        shape = RoundedCornerShape(12.dp),
+                        value = displayName,
+                        onValueChange = { displayName = it },
+                        label = { Text("Nombre") },
                         singleLine = true,
-                        leadingIcon = { Icon(Icons.Default.Person, contentDescription = "Nombre") }
+                        enabled = !isLoading,
+                        leadingIcon = { Icon(Icons.Default.Person, contentDescription = "Nombre") },
+                        modifier = Modifier.fillMaxWidth()
                     )
+                }
 
-                    OutlinedTextField(
-                        value = customEmail,
-                        onValueChange = { customEmail = it },
-                        label = { Text("Correo de Google") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp)
-                            .testTag("login_email_input"),
-                        shape = RoundedCornerShape(12.dp),
-                        singleLine = true,
-                        leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Email") }
-                    )
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Correo") },
+                    singleLine = true,
+                    enabled = !isLoading,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    leadingIcon = { Icon(Icons.Default.Mail, contentDescription = "Correo") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("login_email_input")
+                )
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        TextButton(
-                            onClick = { isCustomUserFormVisible = false },
-                            modifier = Modifier.padding(end = 8.dp)
-                        ) {
-                            Text("Cancelar")
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Contrasena") },
+                    singleLine = true,
+                    enabled = !isLoading,
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Contrasena") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("login_password_input")
+                )
+
+                Button(
+                    onClick = {
+                        if (email.isBlank() || password.length < 6) {
+                            Toast.makeText(context, "Usa un correo valido y minimo 6 caracteres de contrasena.", Toast.LENGTH_LONG).show()
+                            return@Button
                         }
-
-                        Button(
-                            onClick = {
-                                if (customEmail.isNotBlank() && customName.isNotBlank()) {
-                                    sessionManager.login(customEmail, customName)
-                                    Toast.makeText(context, "Sesión creada para $customName", Toast.LENGTH_SHORT).show()
-                                    onLoginSuccess()
-                                } else {
-                                    Toast.makeText(context, "Por favor completa los campos", Toast.LENGTH_SHORT).show()
-                                }
-                            },
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier.testTag("login_custom_submit_button")
-                        ) {
-                            Text("Iniciar Sesión")
+                        if (isCreatingAccount) {
+                            viewModel.signUpWithEmail(email, password, displayName)
+                        } else {
+                            viewModel.signInWithEmail(email, password)
                         }
+                    },
+                    enabled = !isLoading,
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp)
+                        .testTag("login_submit_button")
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(if (isCreatingAccount) "Crear cuenta" else "Entrar")
                     }
+                }
+
+                TextButton(
+                    onClick = { isCreatingAccount = !isCreatingAccount },
+                    enabled = !isLoading,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(if (isCreatingAccount) "Ya tengo cuenta" else "Crear cuenta nueva")
                 }
             }
         }
 
-        // Privacy Footer
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(
-                imageVector = Icons.Default.Lock,
-                contentDescription = "Seguro",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                modifier = Modifier.size(14.dp)
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(
-                text = "Acceso seguro verificado por los servicios de Google.",
-                fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                textAlign = TextAlign.Center
-            )
+            Button(
+                onClick = { viewModel.continueAsGuest() },
+                enabled = !isLoading,
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
+                    .testTag("continue_as_guest_button")
+            ) {
+                Text("Continuar como invitado")
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Lock,
+                    contentDescription = "Seguro",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                )
+                Text(
+                    text = "La cuenta sincronizada usa Supabase Auth. Invitado guarda solo localmente.",
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(start = 6.dp)
+                )
+            }
         }
     }
 }

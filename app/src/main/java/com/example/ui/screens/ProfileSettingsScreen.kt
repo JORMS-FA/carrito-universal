@@ -1,5 +1,7 @@
 package com.example.ui.screens
 
+import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -22,6 +24,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,6 +37,10 @@ import com.example.ui.viewmodel.ShoppingViewModel
 fun ProfileSettingsScreen(viewModel: ShoppingViewModel, onLogout: () -> Unit) {
     val context = LocalContext.current
     val userSession by viewModel.currentUser.collectAsState()
+    val geminiApiKey by viewModel.geminiApiKey.collectAsState()
+    val language by viewModel.language.collectAsState()
+    var showGeminiDialog by remember { mutableStateOf(false) }
+    var editableGeminiApiKey by remember(geminiApiKey) { mutableStateOf(geminiApiKey) }
 
     Scaffold(
         topBar = {
@@ -70,17 +77,17 @@ fun ProfileSettingsScreen(viewModel: ShoppingViewModel, onLogout: () -> Unit) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = userSession?.displayName ?: "Usuario de Google",
+                    text = userSession?.displayName ?: "Usuario",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground
                 )
 
-                Text(
-                    text = userSession?.email ?: "correo@google.com",
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                    Text(
+                        text = if (userSession?.isGuest == true) "Modo local sin sincronizacion" else userSession?.email ?: "correo@supabase.com",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -91,7 +98,7 @@ fun ProfileSettingsScreen(viewModel: ShoppingViewModel, onLogout: () -> Unit) {
                         .padding(horizontal = 12.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = "Sesión Protegida",
+                        text = if (userSession?.isGuest == true) "Invitado local" else "Sincronizado con Supabase",
                         color = MaterialTheme.colorScheme.primary,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
@@ -278,30 +285,40 @@ fun ProfileSettingsScreen(viewModel: ShoppingViewModel, onLogout: () -> Unit) {
                 // Info Item - Encryption key warning info
                 SettingsRow(
                     icon = Icons.Default.Security,
-                    title = "Seguridad del Dispositivo",
-                    description = "Los datos del monedero están cifrados localmente en la base de datos Room del terminal.",
+                    title = "Sincronizacion de cuenta",
+                    description = if (userSession?.isGuest == true) "Este perfil guarda productos solo en el dispositivo." else "Este perfil queda listo para sincronizar productos con Supabase y la futura version web.",
                     onClick = {
-                        Toast.makeText(context, "Seguridad activada por SQLite", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, if (userSession?.isGuest == true) "Modo invitado local" else "Sesion Supabase activa", Toast.LENGTH_SHORT).show()
                     }
                 )
 
                 // Developer notes item
                 SettingsRow(
-                    icon = Icons.Default.Info,
-                    title = "Uso de Gemini API",
-                    description = "Análisis e inferencia inteligente de tiendas vía modelos de lenguaje en tiempo real.",
+                    icon = Icons.Default.Language,
+                    title = "Idioma",
+                    description = if (language == "es") "Español" else "English",
                     onClick = {
-                        Toast.makeText(context, "Módulo Gemini v1beta activo", Toast.LENGTH_SHORT).show()
+                        viewModel.updateLanguage(if (language == "es") "en" else "es")
+                        Toast.makeText(context, "Idioma cambiado. Traducciones completas en la siguiente fase.", Toast.LENGTH_SHORT).show()
+                    }
+                )
+
+                SettingsRow(
+                    icon = Icons.Default.Info,
+                    title = "Clave Gemini API",
+                    description = if (geminiApiKey.isBlank()) "Agrega tu clave personal de Google AI Studio para activar el analisis inteligente." else "Clave configurada en este dispositivo.",
+                    onClick = {
+                        showGeminiDialog = true
                     }
                 )
 
                 // About item
                 SettingsRow(
                     icon = Icons.Default.Star,
-                    title = "Acerca de ShopWise",
-                    description = "Versión 1.0.0. Desarrollado con Jetpack Compose y directivas de diseño One UI.",
+                    title = "Acerca de Carrito Universal",
+                    description = "Version 1.0.0. Desarrollado con Jetpack Compose y Material 3.",
                     onClick = {
-                        Toast.makeText(context, "ShopWise v1.0 • Samsung UI 6.0 concept", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Carrito Universal v1.0", Toast.LENGTH_SHORT).show()
                     }
                 )
 
@@ -333,13 +350,13 @@ fun ProfileSettingsScreen(viewModel: ShoppingViewModel, onLogout: () -> Unit) {
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Cerrar Sesión de Google",
+                                text = if (userSession?.isGuest == true) "Salir del modo invitado" else "Cerrar sesion",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = PriorityHigh
                             )
                             Text(
-                                text = "Elimina de forma segura la recuperación de token y la caché del terminal.",
+                                text = "Elimina la sesion local de este dispositivo.",
                                 fontSize = 12.sp,
                                 color = PriorityHigh.copy(alpha = 0.8f)
                             )
@@ -350,6 +367,58 @@ fun ProfileSettingsScreen(viewModel: ShoppingViewModel, onLogout: () -> Unit) {
 
             Spacer(modifier = Modifier.height(40.dp))
         }
+    }
+
+    if (showGeminiDialog) {
+        AlertDialog(
+            onDismissRequest = { showGeminiDialog = false },
+            title = { Text("Clave Gemini API") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        text = "Crea tu clave personal en Google AI Studio y pegala aqui. Se guarda solo en este dispositivo.",
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    OutlinedTextField(
+                        value = editableGeminiApiKey,
+                        onValueChange = { editableGeminiApiKey = it },
+                        label = { Text("Gemini API key") },
+                        singleLine = true,
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    TextButton(
+                        onClick = {
+                            context.startActivity(
+                                Intent(
+                                    Intent.ACTION_VIEW,
+                                    Uri.parse("https://aistudio.google.com/app/apikey")
+                                )
+                            )
+                        }
+                    ) {
+                        Text("Abrir Google AI Studio")
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.updateGeminiApiKey(editableGeminiApiKey)
+                        Toast.makeText(context, "Clave Gemini guardada", Toast.LENGTH_SHORT).show()
+                        showGeminiDialog = false
+                    }
+                ) {
+                    Text("Guardar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showGeminiDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 }
 

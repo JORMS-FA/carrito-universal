@@ -1,7 +1,6 @@
 package com.example.data.repository
 
 import android.util.Log
-import com.example.BuildConfig
 import com.example.data.local.ProductDao
 import com.example.data.local.ProductEntity
 import com.example.data.remote.*
@@ -52,17 +51,24 @@ class ProductRepository(private val productDao: ProductDao) {
     /**
      * Utilizes Gemini 3.5-flash via REST API to extract product data from URL.
      */
-    suspend fun extractProductFromUrl(url: String): ProductExtractionResult = withContext(Dispatchers.IO) {
-        val apiKey = BuildConfig.GEMINI_API_KEY
-        
-        if (apiKey.isEmpty() || apiKey == "MY_GEMINI_API_KEY" || apiKey == "GEMINI_API_KEY") {
-            Log.w("ProductRepository", "Gemini API key is not configured in Secrets panel")
-            return@withContext getLocalFallbackResult(url, "Falta clave Gemini API. Configúrala en el panel de Secrets de AI Studio en la nube.")
+    suspend fun extractProductFromUrl(url: String, apiKey: String): ProductExtractionResult = withContext(Dispatchers.IO) {
+        val cleanApiKey = apiKey.trim()
+
+        if (cleanApiKey.isEmpty()) {
+            Log.w("ProductRepository", "Gemini API key is not configured by the user")
+            return@withContext getLocalFallbackResult(url, "Falta clave Gemini API. Configurala en Ajustes para activar el analisis inteligente.")
         }
+
+        val pageHtml = runCatching { RetrofitClient.fetchUrl(url) }.getOrDefault("")
+        val pageTitle = extractMeta(pageHtml, "og:title").ifBlank { extractTitle(pageHtml) }
+        val pageImage = extractMeta(pageHtml, "og:image").ifBlank { extractMeta(pageHtml, "twitter:image") }
 
         val prompt = """
             Eres un analista experto de productos de compras online. 
             Analiza en detalle este enlace de producto: $url
+            Datos obtenidos directamente de la pagina:
+            - Titulo HTML/meta: ${pageTitle.ifBlank { "no detectado" }}
+            - Imagen principal meta: ${pageImage.ifBlank { "no detectada" }}
 
             Obtén información o deduce especificaciones precisas según tus conocimientos globales de la tienda y el producto mencionado.
             Debes devolver EXCLUSIVAMENTE un bloque de texto en formato JSON puro (sin bloques decorativos markdown ```json o similares, SOLO el JSON plano) que calce exactamente con este esquema:
@@ -75,7 +81,7 @@ class ProductRepository(private val productDao: ProductDao) {
               "category": "Tecnología", "Hogar", "Ropa", "Deportes", "Belleza", "Libros" u "Otros" (elige uno de estos valores),
               "description": "Una descripción premium corta de 1 a 2 párrafos",
               "sourceStore": "La tienda correspondiente, ej. Amazon, Mercado Libre, Temu, AliExpress, Shopee, eBay, Nike",
-              "imageUrl": "Elige el enlace de Unsplash de alta resolución que calce mejor de estos ejemplos para verse espectacular:
+              "imageUrl": "Usa primero la Imagen principal meta si existe y corresponde al producto. Si no existe, elige el enlace de Unsplash de alta resolución que calce mejor:
                  - Auriculares/Sonido: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e'
                  - Laptops/Monitores: 'https://images.unsplash.com/photo-1496181130204-755241524eab'
                  - Celulares/Tech: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9'
@@ -104,7 +110,7 @@ class ProductRepository(private val productDao: ProductDao) {
         )
 
         try {
-            val response = RetrofitClient.geminiService.generateContent(apiKey, request)
+            val response = RetrofitClient.geminiService.generateContent(cleanApiKey, request)
             val jsonText = response.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text
             if (jsonText != null) {
                 val cleanJson = cleanJsonResponse(jsonText)
@@ -136,6 +142,26 @@ class ProductRepository(private val productDao: ProductDao) {
             str = str.substringBeforeLast("```")
         }
         return str.trim()
+    }
+
+    private fun extractMeta(html: String, property: String): String {
+        if (html.isBlank()) return ""
+        val patterns = listOf(
+            Regex("""<meta[^>]+property=["']$property["'][^>]+content=["']([^"']+)["']""", RegexOption.IGNORE_CASE),
+            Regex("""<meta[^>]+content=["']([^"']+)["'][^>]+property=["']$property["']""", RegexOption.IGNORE_CASE),
+            Regex("""<meta[^>]+name=["']$property["'][^>]+content=["']([^"']+)["']""", RegexOption.IGNORE_CASE)
+        )
+        return patterns.firstNotNullOfOrNull { it.find(html)?.groupValues?.getOrNull(1) }.orEmpty()
+    }
+
+    private fun extractTitle(html: String): String {
+        return Regex("""<title[^>]*>(.*?)</title>""", RegexOption.IGNORE_CASE)
+            .find(html)
+            ?.groupValues
+            ?.getOrNull(1)
+            ?.replace(Regex("\\s+"), " ")
+            ?.trim()
+            .orEmpty()
     }
 
     private fun getLocalFallbackResult(url: String, extraNotes: String): ProductExtractionResult {

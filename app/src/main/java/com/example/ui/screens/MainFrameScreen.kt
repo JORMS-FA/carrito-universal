@@ -22,7 +22,8 @@ fun MainFrameScreen(
     viewModel: ShoppingViewModel,
     onNavigateToAddProduct: () -> Unit,
     onNavigateToProductDetail: (Int) -> Unit,
-    onNavigateToMarkdownView: (Int) -> Unit
+    onNavigateToMarkdownView: (Int) -> Unit,
+    onOpenSettings: () -> Unit
 ) {
     var activeSubScreen by remember { mutableStateOf("deseos") } // "deseos", "comparar", "recordatorios", "ajustes"
 
@@ -91,7 +92,8 @@ fun MainFrameScreen(
                     viewModel = viewModel,
                     onNavigateToAdd = onNavigateToAddProduct,
                     onNavigateToDetail = onNavigateToProductDetail,
-                    onNavigateToCompare = { activeSubScreen = "comparar" }
+                    onNavigateToCompare = { activeSubScreen = "comparar" },
+                    onOpenSettings = onOpenSettings
                 )
                 "comparar" -> ComparadorScreen(
                     viewModel = viewModel,

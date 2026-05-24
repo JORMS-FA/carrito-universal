@@ -9,6 +9,7 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.http.Query
 import java.util.concurrent.TimeUnit
+import okhttp3.Request
 
 interface GeminiApiService {
     @POST("v1beta/models/gemini-3.5-flash:generateContent")
@@ -38,6 +39,26 @@ object RetrofitClient {
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
             .create(GeminiApiService::class.java)
+    }
+
+    fun supabaseAuthService(baseUrl: String): SupabaseAuthService {
+        return Retrofit.Builder()
+            .baseUrl(baseUrl.trimEnd('/') + "/")
+            .client(okHttpClient)
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .build()
+            .create(SupabaseAuthService::class.java)
+    }
+
+    fun fetchUrl(url: String): String {
+        val request = Request.Builder()
+            .url(url)
+            .header("User-Agent", "Mozilla/5.0 CarritoUniversal/1.0")
+            .build()
+        okHttpClient.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) return ""
+            return response.body?.string().orEmpty()
+        }
     }
 
     val moshiParser: Moshi by lazy { moshi }

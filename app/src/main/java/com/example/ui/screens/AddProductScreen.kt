@@ -29,6 +29,7 @@ import com.example.ui.viewmodel.ShoppingViewModel
 @Composable
 fun AddProductScreen(
     viewModel: ShoppingViewModel,
+    initialUrl: String? = null,
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -63,6 +64,13 @@ fun AddProductScreen(
     val statuses = listOf("Por revisar", "Prioritario", "En espera", "Comprado", "Descartado")
 
     var showForm by remember { mutableStateOf(false) }
+
+    LaunchedEffect(initialUrl) {
+        if (!initialUrl.isNullOrBlank()) {
+            urlInput = initialUrl
+            viewModel.extractAndAnalyzeLink(initialUrl)
+        }
+    }
 
     // React to Gemini api results
     LaunchedEffect(extractionState) {

@@ -21,3 +21,5 @@ debug.keystore
 *.apk
 *.aab
 .build-outputs/
+dist-local/
+.android-sdk/

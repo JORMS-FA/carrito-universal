@@ -43,6 +43,19 @@ android {
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
       signingConfig = signingConfigs.getByName("release")
     }
+    create("localRelease") {
+      initWith(getByName("release"))
+      isCrunchPngs = true
+      isMinifyEnabled = true
+      isShrinkResources = true
+      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+      signingConfig = if (System.getenv("LOCAL_RELEASE_SIGN_WITH_UPLOAD_KEY") == "true") {
+        signingConfigs.getByName("release")
+      } else {
+        signingConfigs.getByName("debugConfig")
+      }
+      matchingFallbacks += listOf("release")
+    }
     debug {
       signingConfig = signingConfigs.getByName("debugConfig")
     }

@@ -51,7 +51,7 @@ fun ComparadorScreen(
         }
         if (selectedCategory.isNotBlank()) {
             // Read products matching this category directly
-            val user = viewModel.currentUser.value?.email ?: ""
+            val user = viewModel.currentUser.value?.id ?: ""
             activeProducts = viewModel.getProductsByCategorySync(user, selectedCategory)
         } else {
             activeProducts = emptyList()
@@ -89,7 +89,7 @@ fun ComparadorScreen(
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground,
-                    letterSpacing = (-1).sp
+                    letterSpacing = 0.sp
                 )
             }
 
@@ -169,7 +169,7 @@ fun ComparadorScreen(
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
-                                        text = "Asistente Inteligente ShopWise",
+                                        text = "Asistente Inteligente Carrito Universal",
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 14.sp,
                                         color = MaterialTheme.colorScheme.primary

@@ -1,17 +1,16 @@
 package com.example
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -23,10 +22,18 @@ import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.viewmodel.ShoppingViewModel
 
 class MainActivity : ComponentActivity() {
+    private fun extractSharedUrl(intent: Intent?): String? {
+        if (intent?.action != Intent.ACTION_SEND || intent.type != "text/plain") return null
+        return intent.getStringExtra(Intent.EXTRA_TEXT)
+            ?.split(Regex("\\s+"))
+            ?.firstOrNull { it.startsWith("http://") || it.startsWith("https://") }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            var sharedUrl by remember { mutableStateOf(extractSharedUrl(intent)) }
             val shoppingViewModel: ShoppingViewModel = viewModel()
             val themeMode by shoppingViewModel.themeMode.collectAsState()
             val themeColor by shoppingViewModel.themeColor.collectAsState()
@@ -54,10 +61,10 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    // 2. Simulated Google Login Screen
+                    // 2. Supabase Login Screen
                     composable("login") {
                         LoginScreen(
-                            sessionManager = shoppingViewModel.sessionManager,
+                            viewModel = shoppingViewModel,
                             onLoginSuccess = {
                                 shoppingViewModel.checkActiveSession()
                                 navController.navigate("main") {
@@ -88,6 +95,21 @@ class MainActivity : ComponentActivity() {
                             },
                             onNavigateToMarkdownView = { productId ->
                                 navController.navigate("markdown_view/$productId")
+                            },
+                            onOpenSettings = {
+                                navController.navigate("main_settings")
+                            }
+                        )
+                    }
+
+                    composable("main_settings") {
+                        ProfileSettingsScreen(
+                            viewModel = shoppingViewModel,
+                            onLogout = {
+                                shoppingViewModel.checkActiveSession()
+                                navController.navigate("login") {
+                                    popUpTo("main") { inclusive = true }
+                                }
                             }
                         )
                     }
@@ -96,7 +118,9 @@ class MainActivity : ComponentActivity() {
                     composable("add_product") {
                         AddProductScreen(
                             viewModel = shoppingViewModel,
+                            initialUrl = sharedUrl,
                             onNavigateBack = {
+                                sharedUrl = null
                                 navController.popBackStack()
                             }
                         )
@@ -133,6 +157,12 @@ class MainActivity : ComponentActivity() {
                                 navController.popBackStack()
                             }
                         )
+                    }
+                }
+
+                LaunchedEffect(sharedUrl, userSession) {
+                    if (sharedUrl != null && userSession != null) {
+                        navController.navigate("add_product")
                     }
                 }
             }

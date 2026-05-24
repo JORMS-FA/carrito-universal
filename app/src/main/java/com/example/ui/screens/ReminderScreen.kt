@@ -68,7 +68,7 @@ fun ReminderScreen(viewModel: ShoppingViewModel) {
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground,
-                    letterSpacing = (-1).sp
+                    letterSpacing = 0.sp
                 )
             }
 

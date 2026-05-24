@@ -83,7 +83,7 @@ fun MarkdownDocumentScreen(
                     IconButton(
                         onClick = {
                             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                            val clip = ClipData.newPlainText("ShopWise Markdown", markdownContent)
+                            val clip = ClipData.newPlainText("Carrito Universal Markdown", markdownContent)
                             clipboard.setPrimaryClip(clip)
                             Toast.makeText(context, "Copiado al portapapeles!", Toast.LENGTH_SHORT).show()
                         },

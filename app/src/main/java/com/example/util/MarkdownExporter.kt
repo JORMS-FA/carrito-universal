@@ -47,7 +47,7 @@ object MarkdownExporter {
             ${product.notes.ifBlank { "Sin notas añadidas." }}
             
             ---
-            *Ficha de decisión generada automáticamente en ShopWise el ${java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault()).format(java.util.Date(product.createdAt))}*
+            *Ficha de decisión generada automáticamente en Carrito Universal el ${java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault()).format(java.util.Date(product.createdAt))}*
             """.trimIndent()
         }
     }
@@ -55,7 +55,7 @@ object MarkdownExporter {
     fun exportAndShare(context: Context, product: ProductEntity) {
         val mdContent = generateMarkdownContent(product)
         val sanitizedTitle = product.title.replace("[^a-zA-Z0-9]".toRegex(), "_")
-        val fileName = "ShopWise_${sanitizedTitle}.md"
+        val fileName = "CarritoUniversal_${sanitizedTitle}.md"
 
         try {
             // Write to shared cache directory
@@ -74,7 +74,7 @@ object MarkdownExporter {
                 type = "text/markdown"
                 putExtra(Intent.EXTRA_STREAM, fileUri)
                 putExtra(Intent.EXTRA_SUBJECT, "Ficha de Producto: ${product.title}")
-                putExtra(Intent.EXTRA_TEXT, "Te comparto la ficha de decisión de compra de este producto guardado en ShopWise.")
+                putExtra(Intent.EXTRA_TEXT, "Te comparto la ficha de decisión de compra de este producto guardado en Carrito Universal.")
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
 

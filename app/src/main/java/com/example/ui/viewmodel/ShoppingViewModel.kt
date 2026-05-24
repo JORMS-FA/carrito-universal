@@ -6,6 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.local.AppDatabase
 import com.example.data.local.ProductEntity
+import com.example.data.repository.AuthRepository
 import com.example.data.repository.ProductRepository
 import com.example.util.NotificationHelper
 import com.example.util.SessionManager
@@ -20,11 +21,19 @@ sealed class ExtractionUiState {
     data class Error(val message: String) : ExtractionUiState()
 }
 
+sealed class AuthUiState {
+    object Idle : AuthUiState()
+    object Loading : AuthUiState()
+    object Success : AuthUiState()
+    data class Error(val message: String) : AuthUiState()
+}
+
 class ShoppingViewModel(application: Application) : AndroidViewModel(application) {
     
     val sessionManager = SessionManager(application)
     private val database = AppDatabase.getDatabase(application)
     private val repository = ProductRepository(database.productDao())
+    private val authRepository = AuthRepository(sessionManager)
 
     // Theme States (One UI 8.5 customization)
     private val _themeMode = MutableStateFlow(sessionManager.getThemeMode())
@@ -33,20 +42,39 @@ class ShoppingViewModel(application: Application) : AndroidViewModel(application
     private val _themeColor = MutableStateFlow(sessionManager.getThemeColor())
     val themeColor: StateFlow<String> = _themeColor.asStateFlow()
 
+    private val _geminiApiKey = MutableStateFlow(sessionManager.getGeminiApiKey())
+    val geminiApiKey: StateFlow<String> = _geminiApiKey.asStateFlow()
+
+    private val _language = MutableStateFlow(sessionManager.getLanguage())
+    val language: StateFlow<String> = _language.asStateFlow()
+
     fun updateTheme(mode: String, color: String) {
         sessionManager.setTheme(mode, color)
         _themeMode.value = mode
         _themeColor.value = color
     }
 
+    fun updateGeminiApiKey(apiKey: String) {
+        sessionManager.setGeminiApiKey(apiKey)
+        _geminiApiKey.value = apiKey.trim()
+    }
+
+    fun updateLanguage(language: String) {
+        sessionManager.setLanguage(language)
+        _language.value = language
+    }
+
     // Active User State
     private val _currentUser = MutableStateFlow<UserSession?>(null)
     val currentUser: StateFlow<UserSession?> = _currentUser.asStateFlow()
 
+    private val _authState = MutableStateFlow<AuthUiState>(AuthUiState.Idle)
+    val authState: StateFlow<AuthUiState> = _authState.asStateFlow()
+
     // Full User Products Flow
     val allUserProducts: Flow<List<ProductEntity>> = _currentUser.flatMapLatest { session ->
         if (session != null) {
-            repository.getProductsByUserId(session.email)
+            repository.getProductsByUserId(session.id)
         } else {
             flowOf(emptyList())
         }
@@ -55,7 +83,7 @@ class ShoppingViewModel(application: Application) : AndroidViewModel(application
     // List of Unique Categories
     val uniqueCategories: Flow<List<String>> = _currentUser.flatMapLatest { session ->
         if (session != null) {
-            repository.getUniqueCategories(session.email)
+            repository.getUniqueCategories(session.id)
         } else {
             flowOf(emptyList())
         }
@@ -64,7 +92,7 @@ class ShoppingViewModel(application: Application) : AndroidViewModel(application
     // Upcoming reminders list
     val reminderProducts: Flow<List<ProductEntity>> = _currentUser.flatMapLatest { session ->
         if (session != null) {
-            repository.getProductsWithReminders(session.email)
+            repository.getProductsWithReminders(session.id)
         } else {
             flowOf(emptyList())
         }
@@ -87,11 +115,42 @@ class ShoppingViewModel(application: Application) : AndroidViewModel(application
     fun logout() {
         sessionManager.logout()
         _currentUser.value = null
+        _authState.value = AuthUiState.Idle
     }
 
-    fun loginMock(email: String, name: String, photo: String) {
-        sessionManager.login(email, name, photo)
+    fun signInWithEmail(email: String, password: String) {
+        authenticate {
+            authRepository.signIn(email, password)
+        }
+    }
+
+    fun signUpWithEmail(email: String, password: String, displayName: String) {
+        authenticate {
+            authRepository.signUp(email, password, displayName)
+        }
+    }
+
+    fun continueAsGuest() {
+        authRepository.continueAsGuest()
         checkActiveSession()
+        _authState.value = AuthUiState.Success
+    }
+
+    fun clearAuthState() {
+        _authState.value = AuthUiState.Idle
+    }
+
+    private fun authenticate(block: suspend () -> Unit) {
+        _authState.value = AuthUiState.Loading
+        viewModelScope.launch {
+            try {
+                block()
+                checkActiveSession()
+                _authState.value = AuthUiState.Success
+            } catch (e: Exception) {
+                _authState.value = AuthUiState.Error(AuthRepository.readableError(e))
+            }
+        }
     }
 
     // --- Product DB Operations ---
@@ -99,7 +158,7 @@ class ShoppingViewModel(application: Application) : AndroidViewModel(application
     fun saveProduct(product: ProductEntity, onComplete: (Int) -> Unit = {}) {
         viewModelScope.launch {
             val user = _currentUser.value ?: return@launch
-            var productToSave = product.copy(userId = user.email)
+            var productToSave = product.copy(userId = user.id)
             
             // Initialize price history if blank
             if (productToSave.priceHistory.isBlank()) {
@@ -164,7 +223,7 @@ class ShoppingViewModel(application: Application) : AndroidViewModel(application
                     context = getApplication(),
                     productId = productToSave.id,
                     timeInMillis = productToSave.reminderDate,
-                    title = "ShopWise: Decisión para ${productToSave.title}",
+                    title = "Carrito Universal: Decisión para ${productToSave.title}",
                     message = "Programaste evaluar comprar ${productToSave.title} en ${productToSave.sourceStore} por $formattedPrice. ¿Lo compramos hoy?"
                 )
             } else {
@@ -231,13 +290,13 @@ class ShoppingViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             try {
                 val user = _currentUser.value
-                val userEmail = user?.email ?: "anonymous@shopwise.com"
+                val userId = user?.id ?: "guest-local"
                 
-                val result = repository.extractProductFromUrl(url)
+                val result = repository.extractProductFromUrl(url, sessionManager.getGeminiApiKey())
                 
                 // Formulate target entity
                 val finalProduct = ProductEntity(
-                    userId = userEmail,
+                    userId = userId,
                     title = result.title,
                     url = url,
                     brand = result.brand,
