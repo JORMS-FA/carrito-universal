@@ -31,10 +31,11 @@ jobs:
           distribution: temurin
           java-version: "21"
 
-      - name: Create fallback .env file
+      - name: Create fallback env file
         run: |
-          if [ ! -f .env ]; then
-            echo "GEMINI_API_KEY=dummy_value_for_workflow_compilation" > .env
+          mkdir -p config
+          if [ ! -f config/.env ]; then
+            echo "GEMINI_API_KEY=dummy_value_for_workflow_compilation" > config/.env
           fi
 
       - name: Validate release secrets
@@ -80,10 +81,11 @@ jobs:
           distribution: temurin
           java-version: "21"
 
-      - name: Create fallback .env file
+      - name: Create fallback env file
         run: |
-          if [ ! -f .env ]; then
-            echo "GEMINI_API_KEY=dummy_value_for_workflow_compilation" > .env
+          mkdir -p config
+          if [ ! -f config/.env ]; then
+            echo "GEMINI_API_KEY=dummy_value_for_workflow_compilation" > config/.env
           fi
 
       - name: Decode debug keystore

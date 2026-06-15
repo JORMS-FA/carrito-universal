@@ -36,6 +36,31 @@ class AuthRepository(private val sessionManager: SessionManager) {
         persistSession(response, cleanEmail)
     }
 
+    suspend fun signInWithGoogle(idToken: String) {
+        ensureConfigured()
+        val response = authService().signInWithIdToken(
+            apiKey = supabaseKey,
+            body = mapOf(
+                "provider" to "google",
+                "id_token" to idToken
+            )
+        )
+        val user = response.user ?: error("Supabase no devolvio un usuario valido con Google.")
+        val displayName = (user.userMetadata?.get("full_name") as? String)
+            ?: (user.userMetadata?.get("name") as? String)
+            ?: user.email?.substringBefore("@") ?: "Usuario"
+        val photoUrl = (user.userMetadata?.get("avatar_url") as? String)
+            ?: (user.userMetadata?.get("picture") as? String) ?: ""
+        sessionManager.login(
+            id = user.id,
+            email = user.email ?: "",
+            name = displayName,
+            photo = photoUrl,
+            accessToken = response.accessToken.orEmpty(),
+            refreshToken = response.refreshToken.orEmpty()
+        )
+    }
+
     fun continueAsGuest() {
         sessionManager.continueAsGuest()
     }
@@ -44,7 +69,7 @@ class AuthRepository(private val sessionManager: SessionManager) {
 
     private fun ensureConfigured() {
         if (supabaseUrl.isBlank() || supabaseKey.isBlank() || supabaseUrl.contains("your-project-ref")) {
-            error("Configura SUPABASE_URL y SUPABASE_ANON_KEY en tu archivo .env para activar el login.")
+            error("Configura SUPABASE_URL y SUPABASE_ANON_KEY en config/.env para activar el login.")
         }
     }
 
@@ -55,7 +80,8 @@ class AuthRepository(private val sessionManager: SessionManager) {
             id = user.id,
             email = user.email ?: fallbackEmail,
             name = displayName?.takeIf { it.isNotBlank() } ?: fallbackEmail.substringBefore("@"),
-            accessToken = response.accessToken.orEmpty()
+            accessToken = response.accessToken.orEmpty(),
+            refreshToken = response.refreshToken.orEmpty()
         )
     }
 

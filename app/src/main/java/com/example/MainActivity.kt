@@ -2,6 +2,8 @@ package com.example
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -10,7 +12,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -20,6 +27,12 @@ import androidx.navigation.navArgument
 import com.example.ui.screens.*
 import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.viewmodel.ShoppingViewModel
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import kotlinx.coroutines.launch
+
+import androidx.compose.ui.platform.LocalContext
+import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     private fun extractSharedUrl(intent: Intent?): String? {
@@ -37,6 +50,54 @@ class MainActivity : ComponentActivity() {
             val shoppingViewModel: ShoppingViewModel = viewModel()
             val themeMode by shoppingViewModel.themeMode.collectAsState()
             val themeColor by shoppingViewModel.themeColor.collectAsState()
+            val language by shoppingViewModel.language.collectAsState()
+            val scope = rememberCoroutineScope()
+
+            val context = LocalContext.current
+
+            // Dynamic locale switching at runtime across all Android versions
+            LaunchedEffect(language) {
+                val locale = Locale(language)
+                Locale.setDefault(locale)
+                val resources = context.resources
+                val configuration = resources.configuration
+                if (configuration.locales.get(0).language != language) {
+                    configuration.setLocale(locale)
+                    resources.updateConfiguration(configuration, resources.displayMetrics)
+                }
+            }
+
+            // Google Sign-In via Credential Manager
+            val launchGoogleSignIn: () -> Unit = {
+                scope.launch {
+                    try {
+                        val credentialManager = CredentialManager.create(context)
+                        val googleIdOption = GetGoogleIdOption.Builder()
+                            .setFilterByAuthorizedAccounts(false)
+                            .setServerClientId(BuildConfig.GOOGLE_WEB_CLIENT_ID)
+                            .setAutoSelectEnabled(false)
+                            .build()
+                        val request = GetCredentialRequest.Builder()
+                            .addCredentialOption(googleIdOption)
+                            .build()
+                        val result = credentialManager.getCredential(context = this@MainActivity, request = request)
+                        val credential = result.credential
+                        if (credential is CustomCredential &&
+                            credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+                        ) {
+                            val googleIdToken = GoogleIdTokenCredential.createFrom(credential.data)
+                            shoppingViewModel.signInWithGoogle(googleIdToken.idToken)
+                        } else {
+                            Toast.makeText(context, "Tipo de credencial no reconocido.", Toast.LENGTH_SHORT).show()
+                        }
+                    } catch (e: GetCredentialCancellationException) {
+                        // User cancelled — no action needed
+                    } catch (e: Exception) {
+                        Log.e("GoogleSignIn", "Error: ${e.message}", e)
+                        Toast.makeText(context, "Error al iniciar sesion con Google: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
 
             MyApplicationTheme(themeMode = themeMode, themeColor = themeColor) {
                 val userSession by shoppingViewModel.currentUser.collectAsState()
@@ -70,7 +131,8 @@ class MainActivity : ComponentActivity() {
                                 navController.navigate("main") {
                                     popUpTo("login") { inclusive = true }
                                 }
-                            }
+                            },
+                            onGoogleSignIn = launchGoogleSignIn
                         )
                     }
 
@@ -169,3 +231,4 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+

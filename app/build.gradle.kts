@@ -11,7 +11,7 @@ android {
   compileSdk { version = release(36) { minorApiLevel = 1 } }
 
   defaultConfig {
-    applicationId = "com.aistudio.shopwise.krmqpz"
+    applicationId = "com.aistudio.carritouniversal.krmqpz"
     minSdk = 24
     targetSdk = 36
     versionCode = 1
@@ -38,8 +38,9 @@ android {
 
   buildTypes {
     release {
-      isCrunchPngs = false
-      isMinifyEnabled = false
+      isCrunchPngs = true
+      isMinifyEnabled = true
+      isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
       signingConfig = signingConfigs.getByName("release")
     }
@@ -71,11 +72,16 @@ android {
   testOptions { unitTests { isIncludeAndroidResources = true } }
 }
 
-// Configure the Secrets Gradle Plugin to use .env and .env.example files
-// to match the convention used in Web projects.
+// Room schema export location
+ksp {
+  arg("room.schemaLocation", "$projectDir/schemas")
+}
+
+// Configure the Secrets Gradle Plugin to read env files from config/.
+// Keep the checked-in template separate from the local secret file.
 secrets {
-  propertiesFileName = ".env"
-  defaultPropertiesFileName = ".env.example"
+  propertiesFileName = "config/.env"
+  defaultPropertiesFileName = "config/.env.example"
 }
 
 // Some unused dependencies are commented out below instead of being removed.
@@ -108,10 +114,15 @@ dependencies {
   // implementation(libs.firebase.ai)
   implementation(libs.kotlinx.coroutines.android)
   implementation(libs.kotlinx.coroutines.core)
-  implementation(libs.logging.interceptor)
+  debugImplementation(libs.logging.interceptor)
   implementation(libs.moshi.kotlin)
   implementation(libs.okhttp)
   // implementation(libs.play.services.location)
+  implementation(libs.credentials)
+  implementation(libs.credentials.play.services.auth)
+  implementation(libs.googleid)
+  implementation(libs.play.services.auth)
+  implementation(libs.androidx.security.crypto)
   implementation(libs.retrofit)
   testImplementation(libs.androidx.compose.ui.test.junit4)
   testImplementation(libs.androidx.core)

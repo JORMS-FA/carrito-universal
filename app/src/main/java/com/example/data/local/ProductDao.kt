@@ -29,6 +29,6 @@ interface ProductDao {
     @Query("SELECT DISTINCT category FROM products WHERE userId = :userId")
     fun getUniqueCategories(userId: String): Flow<List<String>>
 
-    @Query("SELECT * FROM products WHERE userId = :userId AND reminderDate IS NOT NULL AND status != 'Comprado' ORDER BY reminderDate ASC")
+    @Query("SELECT * FROM products WHERE userId = :userId AND reminderDate IS NOT NULL AND status NOT IN ('Comprado', 'Descartado') ORDER BY reminderDate ASC")
     fun getProductsWithReminders(userId: String): Flow<List<ProductEntity>>
 }

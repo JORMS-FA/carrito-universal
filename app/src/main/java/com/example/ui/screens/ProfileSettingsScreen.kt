@@ -31,6 +31,8 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.ui.theme.PriorityHigh
 import com.example.ui.viewmodel.ShoppingViewModel
+import androidx.compose.ui.res.stringResource
+import com.example.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,7 +47,7 @@ fun ProfileSettingsScreen(viewModel: ShoppingViewModel, onLogout: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Ajustes", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.settings_title), fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         }
@@ -84,7 +86,7 @@ fun ProfileSettingsScreen(viewModel: ShoppingViewModel, onLogout: () -> Unit) {
                 )
 
                     Text(
-                        text = if (userSession?.isGuest == true) "Modo local sin sincronizacion" else userSession?.email ?: "correo@supabase.com",
+                        text = if (userSession?.isGuest == true) stringResource(R.string.settings_profile_guest_subtitle) else userSession?.email ?: "correo@supabase.com",
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -98,7 +100,7 @@ fun ProfileSettingsScreen(viewModel: ShoppingViewModel, onLogout: () -> Unit) {
                         .padding(horizontal = 12.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = if (userSession?.isGuest == true) "Invitado local" else "Sincronizado con Supabase",
+                        text = if (userSession?.isGuest == true) stringResource(R.string.settings_profile_guest_badge) else stringResource(R.string.settings_profile_synced_badge),
                         color = MaterialTheme.colorScheme.primary,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
@@ -114,7 +116,7 @@ fun ProfileSettingsScreen(viewModel: ShoppingViewModel, onLogout: () -> Unit) {
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Text(
-                    text = "Configuración",
+                    text = stringResource(R.string.settings_section_config),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
@@ -154,13 +156,13 @@ fun ProfileSettingsScreen(viewModel: ShoppingViewModel, onLogout: () -> Unit) {
                             }
                             Column {
                                 Text(
-                                    text = "Apariencia y Colores",
+                                    text = stringResource(R.string.settings_theme_card_title),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 15.sp,
                                     color = MaterialTheme.colorScheme.onBackground
                                 )
                                 Text(
-                                    text = "Estilo One UI 8.5 • Paleta Adaptativa",
+                                    text = stringResource(R.string.settings_theme_card_sub),
                                     fontSize = 11.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                                 )
@@ -171,7 +173,7 @@ fun ProfileSettingsScreen(viewModel: ShoppingViewModel, onLogout: () -> Unit) {
 
                         // Theme Mode selection: System, Light, Dark
                         Text(
-                            text = "MODO DE PANTALLA",
+                            text = stringResource(R.string.settings_theme_mode),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
@@ -183,9 +185,9 @@ fun ProfileSettingsScreen(viewModel: ShoppingViewModel, onLogout: () -> Unit) {
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             listOf(
-                                "system" to "Por Defecto",
-                                "light" to "Claro",
-                                "dark" to "Oscuro"
+                                "system" to stringResource(R.string.settings_theme_mode_default),
+                                "light" to stringResource(R.string.settings_theme_mode_light),
+                                "dark" to stringResource(R.string.settings_theme_mode_dark)
                             ).forEach { (mode, label) ->
                                 val active = activeThemeMode == mode
                                 Card(
@@ -216,7 +218,7 @@ fun ProfileSettingsScreen(viewModel: ShoppingViewModel, onLogout: () -> Unit) {
 
                         // Color Accents selection (One UI 8.5 Accent list)
                         Text(
-                            text = "PALETA DE ACCENTO (EXPRESSIVE M3)",
+                            text = stringResource(R.string.settings_theme_accent),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
@@ -271,7 +273,7 @@ fun ProfileSettingsScreen(viewModel: ShoppingViewModel, onLogout: () -> Unit) {
                         
                         if (activeThemeColor == "dynamic") {
                             Text(
-                                text = "✨ Paleta Adaptativa de Android 12+ activa. Colores dinámicos sincronizados por el sistema.",
+                                text = stringResource(R.string.settings_theme_dynamic_msg),
                                 fontSize = 10.sp,
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.padding(top = 10.dp)
@@ -285,28 +287,30 @@ fun ProfileSettingsScreen(viewModel: ShoppingViewModel, onLogout: () -> Unit) {
                 // Info Item - Encryption key warning info
                 SettingsRow(
                     icon = Icons.Default.Security,
-                    title = "Sincronizacion de cuenta",
-                    description = if (userSession?.isGuest == true) "Este perfil guarda productos solo en el dispositivo." else "Este perfil queda listo para sincronizar productos con Supabase y la futura version web.",
+                    title = stringResource(R.string.settings_sync_title),
+                    description = if (userSession?.isGuest == true) stringResource(R.string.settings_sync_desc_guest) else stringResource(R.string.settings_sync_desc_user),
                     onClick = {
-                        Toast.makeText(context, if (userSession?.isGuest == true) "Modo invitado local" else "Sesion Supabase activa", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, if (userSession?.isGuest == true) context.getString(R.string.settings_profile_guest_badge) else "Sesion Supabase activa", Toast.LENGTH_SHORT).show()
                     }
                 )
 
                 // Developer notes item
                 SettingsRow(
                     icon = Icons.Default.Language,
-                    title = "Idioma",
+                    title = stringResource(R.string.settings_lang_title),
                     description = if (language == "es") "Español" else "English",
                     onClick = {
-                        viewModel.updateLanguage(if (language == "es") "en" else "es")
-                        Toast.makeText(context, "Idioma cambiado. Traducciones completas en la siguiente fase.", Toast.LENGTH_SHORT).show()
+                        val nextLang = if (language == "es") "en" else "es"
+                        viewModel.updateLanguage(nextLang)
+                        val toastMsg = if (nextLang == "es") "Idioma cambiado a Español" else "Language changed to English"
+                        Toast.makeText(context, toastMsg, Toast.LENGTH_SHORT).show()
                     }
                 )
 
                 SettingsRow(
                     icon = Icons.Default.Info,
-                    title = "Clave Gemini API",
-                    description = if (geminiApiKey.isBlank()) "Agrega tu clave personal de Google AI Studio para activar el analisis inteligente." else "Clave configurada en este dispositivo.",
+                    title = stringResource(R.string.settings_gemini_title),
+                    description = if (geminiApiKey.isBlank()) stringResource(R.string.settings_gemini_desc_empty) else stringResource(R.string.settings_gemini_desc_configured),
                     onClick = {
                         showGeminiDialog = true
                     }
@@ -315,8 +319,8 @@ fun ProfileSettingsScreen(viewModel: ShoppingViewModel, onLogout: () -> Unit) {
                 // About item
                 SettingsRow(
                     icon = Icons.Default.Star,
-                    title = "Acerca de Carrito Universal",
-                    description = "Version 1.0.0. Desarrollado con Jetpack Compose y Material 3.",
+                    title = stringResource(R.string.settings_about_title),
+                    description = stringResource(R.string.settings_about_desc),
                     onClick = {
                         Toast.makeText(context, "Carrito Universal v1.0", Toast.LENGTH_SHORT).show()
                     }
@@ -331,7 +335,7 @@ fun ProfileSettingsScreen(viewModel: ShoppingViewModel, onLogout: () -> Unit) {
                         .clip(RoundedCornerShape(20.dp))
                         .clickable {
                             viewModel.logout()
-                            Toast.makeText(context, "Muelle de sesión cerrado", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, context.getString(R.string.settings_logout_toast), Toast.LENGTH_SHORT).show()
                             onLogout()
                         }
                         .testTag("settings_logout_row"),
@@ -350,16 +354,16 @@ fun ProfileSettingsScreen(viewModel: ShoppingViewModel, onLogout: () -> Unit) {
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = if (userSession?.isGuest == true) "Salir del modo invitado" else "Cerrar sesion",
+                                text = if (userSession?.isGuest == true) stringResource(R.string.settings_logout_guest) else stringResource(R.string.settings_logout_user),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = PriorityHigh
                             )
                             Text(
-                                text = "Elimina la sesion local de este dispositivo.",
+                                text = stringResource(R.string.settings_logout_desc),
                                 fontSize = 12.sp,
                                 color = PriorityHigh.copy(alpha = 0.8f)
-                            )
+                              )
                         }
                     }
                 }

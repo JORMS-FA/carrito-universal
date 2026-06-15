@@ -1,3 +1,62 @@
 <resources>
     <string name="app_name">Carrito Universal</string>
+    <string name="share_intent_label">agregar a mi carrito</string>
+
+    <!-- Navigation -->
+    <string name="nav_wishes">Deseos</string>
+    <string name="nav_compare">Comparar</string>
+    <string name="nav_alerts">Alertas</string>
+    <string name="nav_settings">Ajustes</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_hello">Hola, %1$s</string>
+    <string name="dashboard_title">Mis deseos</string>
+    <string name="dashboard_budget">PRESUPUESTO</string>
+    <string name="dashboard_budget_sub">Valor estimado total</string>
+    <string name="dashboard_urgents">URGENTES</string>
+    <string name="dashboard_saved">GUARDADOS</string>
+    <string name="dashboard_compare_title">Comparador Inteligente</string>
+    <string name="dashboard_compare_sub_empty">Compara según su valor</string>
+    <string name="dashboard_compare_sub_count">%1$d Categorías Guardadas</string>
+    <string name="dashboard_empty_title">No hay productos en esta selección</string>
+    <string name="dashboard_empty_sub">Presiona el botón + para guardar un nuevo producto.</string>
+    <string name="dashboard_sort_recent">Fecha Reciente</string>
+    <string name="dashboard_sort_price_high">Precio Mayor</string>
+    <string name="dashboard_sort_price_low">Precio Menor</string>
+    <string name="dashboard_sort_ai_score">Puntuación de IA</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_profile_guest_subtitle">Modo local sin sincronización</string>
+    <string name="settings_profile_guest_badge">Invitado local</string>
+    <string name="settings_profile_synced_badge">Sincronizado con Supabase</string>
+    <string name="settings_section_config">Configuración</string>
+    <string name="settings_theme_card_title">Apariencia y Colores</string>
+    <string name="settings_theme_card_sub">Estilo One UI 8.5 • Paleta Adaptativa</string>
+    <string name="settings_theme_mode">MODO DE PANTALLA</string>
+    <string name="settings_theme_mode_default">Por Defecto</string>
+    <string name="settings_theme_mode_light">Claro</string>
+    <string name="settings_theme_mode_dark">Oscuro</string>
+    <string name="settings_theme_accent">PALETA DE ACCENTO (EXPRESSIVE M3)</string>
+    <string name="settings_theme_dynamic_msg">✨ Paleta Adaptativa de Android 12+ activa. Colores dinámicos sincronizados por el sistema.</string>
+    
+    <string name="settings_sync_title">Sincronización de cuenta</string>
+    <string name="settings_sync_desc_guest">Este perfil guarda productos solo en el dispositivo.</string>
+    <string name="settings_sync_desc_user">Este perfil queda listo para sincronizar productos con Supabase y la futura versión web.</string>
+    
+    <string name="settings_lang_title">Idioma</string>
+    <string name="settings_lang_desc">Español</string>
+    <string name="settings_lang_toast">Idioma cambiado. Traducciones completas aplicándose.</string>
+    
+    <string name="settings_gemini_title">Clave Gemini API</string>
+    <string name="settings_gemini_desc_empty">Agrega tu clave personal de Google AI Studio para activar el análisis inteligente.</string>
+    <string name="settings_gemini_desc_configured">Clave configurada en este dispositivo.</string>
+    
+    <string name="settings_about_title">Acerca de Carrito Universal</string>
+    <string name="settings_about_desc">Versión 1.0.0. Desarrollado con Jetpack Compose y Material 3.</string>
+    
+    <string name="settings_logout_guest">Salir del modo invitado</string>
+    <string name="settings_logout_user">Cerrar sesión</string>
+    <string name="settings_logout_desc">Elimina la sesión local de este dispositivo.</string>
+    <string name="settings_logout_toast">Muelle de sesión cerrado</string>
 </resources>

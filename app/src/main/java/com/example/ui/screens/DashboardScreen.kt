@@ -32,6 +32,8 @@ import com.example.ui.theme.PriorityHigh
 import com.example.ui.theme.PriorityLow
 import com.example.ui.theme.PriorityMedium
 import com.example.ui.viewmodel.ShoppingViewModel
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -115,21 +117,30 @@ fun DashboardScreen(
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.Start
                 ) {
-                    Text(
-                        text = "Hola, ${userSession?.displayName?.substringBefore(" ") ?: "Comprador"}",
-                        fontSize = 15.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontWeight = FontWeight.Medium
+                    AsyncImage(
+                        model = userSession?.photoUrl ?: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150",
+                        contentDescription = "Avatar de usuario",
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .clickable { onOpenSettings() },
+                        contentScale = ContentScale.Crop
                     )
-                    IconButton(onClick = onOpenSettings) {
-                        Icon(Icons.Default.AccountCircle, contentDescription = "Ajustes")
-                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = stringResource(R.string.dashboard_hello, userSession?.displayName?.substringBefore(" ") ?: "Comprador"),
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.clickable { onOpenSettings() }
+                    )
                 }
                 
                 Text(
-                    text = "Mis deseos",
+                    text = stringResource(R.string.dashboard_title),
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground,
@@ -161,7 +172,7 @@ fun DashboardScreen(
                             verticalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = "PRESUPUESTO",
+                                text = stringResource(R.string.dashboard_budget),
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary,
@@ -177,7 +188,7 @@ fun DashboardScreen(
                                     overflow = TextOverflow.Ellipsis
                                 )
                                 Text(
-                                    text = "Valor estimado total",
+                                    text = stringResource(R.string.dashboard_budget_sub),
                                     fontSize = 11.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                                 )
@@ -210,7 +221,7 @@ fun DashboardScreen(
                             ) {
                                 Column {
                                     Text(
-                                        text = "URGENTES",
+                                        text = stringResource(R.string.dashboard_urgents),
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = PriorityHigh,
@@ -253,7 +264,7 @@ fun DashboardScreen(
                             ) {
                                 Column {
                                     Text(
-                                        text = "GUARDADOS",
+                                        text = stringResource(R.string.dashboard_saved),
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.secondary,
@@ -319,12 +330,12 @@ fun DashboardScreen(
                             }
                             Column {
                                 val categoryText = if (uniqueCategories.isNotEmpty()) {
-                                    "${uniqueCategories.size} Categorías Guardadas"
+                                    stringResource(R.string.dashboard_compare_sub_count, uniqueCategories.size)
                                 } else {
-                                    "Compara según su valor"
+                                    stringResource(R.string.dashboard_compare_sub_empty)
                                 }
                                 Text(
-                                    text = "Comparador Inteligente",
+                                    text = stringResource(R.string.dashboard_compare_title),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 15.sp,
                                     color = Color(0xFF0D47A1)
@@ -445,13 +456,13 @@ fun DashboardScreen(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "No hay productos en esta selección",
+                            text = stringResource(R.string.dashboard_empty_title),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "Presiona el botón + para guardar un nuevo producto.",
+                            text = stringResource(R.string.dashboard_empty_sub),
                             fontSize = 13.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                             modifier = Modifier.padding(top = 4.dp)
@@ -518,16 +529,24 @@ fun ProductItemCard(product: ProductEntity, onClick: () -> Unit) {
                 .padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Product Hero Thumbnail
-            AsyncImage(
-                model = product.imageUrl,
-                contentDescription = product.title,
+            // Product Hero Thumbnail in premium container
+            Box(
                 modifier = Modifier
                     .size(80.dp)
                     .clip(RoundedCornerShape(18.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentScale = ContentScale.Crop
-            )
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                    .border(0.5.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f), RoundedCornerShape(18.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                AsyncImage(
+                    model = product.imageUrl,
+                    contentDescription = product.title,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(6.dp),
+                    contentScale = ContentScale.Fit
+                )
+            }
 
             Spacer(modifier = Modifier.width(16.dp))
 

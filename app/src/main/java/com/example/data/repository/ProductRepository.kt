@@ -110,7 +110,7 @@ class ProductRepository(private val productDao: ProductDao) {
         )
 
         try {
-            val response = RetrofitClient.geminiService.generateContent(cleanApiKey, request)
+            val response = RetrofitClient.geminiService.generateContent(request)
             val jsonText = response.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text
             if (jsonText != null) {
                 val cleanJson = cleanJsonResponse(jsonText)

@@ -1,0 +1,41 @@
+# 🛍️ Carrito Universal — Dual License Agreement
+
+This repository and its source code are licensed under a **Dual Licensing Model** to allow both open-source development and commercial viability.
+
+---
+
+## Option 1: GNU Affero General Public License v3 (AGPLv3)
+
+For the open-source community, this software is licensed under the **GNU Affero General Public License v3 (AGPLv3)**. 
+
+Under this license, you are free to:
+- Copy, modify, and distribute the source code.
+- Run the application on your own devices.
+- Integrate the code into open-source projects.
+
+### Important Condition:
+If you modify this application or host it as a service, **you must make your entire modified source code available to the public under the AGPLv3 license**. You cannot close the source code of any derivative work.
+
+See the official GNU AGPLv3 license text at: `https://www.gnu.org/licenses/agpl-3.0.html`
+
+---
+
+## Option 2: Commercial Proprietary License
+
+If you wish to:
+- Integrate this code into a closed-source proprietary application.
+- Distribute a commercial product without making your modifications public.
+- Avoid the copyleft requirements of the AGPLv3.
+
+You must obtain a **Commercial Proprietary License** from the copyright holder.
+
+### Contact for Commercial Licensing:
+To purchase a commercial license or request custom branding/licensing agreements, please contact the repository owner:
+
+- **Copyright Owner:** Jorman Fagua (JORMS-FA)
+- **GitHub Profile:** [https://github.com/JORMS-FA](https://github.com/JORMS-FA)
+- **Project Name:** Carrito Universal
+
+---
+
+Copyright © 2026 Jorman Fagua. All rights reserved.

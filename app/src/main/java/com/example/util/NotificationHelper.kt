@@ -12,7 +12,7 @@ import android.util.Log
 import com.example.MainActivity
 
 object NotificationHelper {
-    private const val CHANNEL_ID = "shopwise_purchase_reminders"
+    private const val CHANNEL_ID = "carrito_universal_purchase_reminders"
     private const val CHANNEL_NAME = "Recordatorios de Compra"
     private const val CHANNEL_DESC = "Notificaciones para decidir si comprar un artículo guardado"
 

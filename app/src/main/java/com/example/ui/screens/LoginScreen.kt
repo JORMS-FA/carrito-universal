@@ -1,6 +1,7 @@
 package com.example.ui.screens
 
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -25,8 +27,10 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -39,6 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -52,7 +57,11 @@ import com.example.ui.viewmodel.ShoppingViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(viewModel: ShoppingViewModel, onLoginSuccess: () -> Unit) {
+fun LoginScreen(
+    viewModel: ShoppingViewModel,
+    onLoginSuccess: () -> Unit,
+    onGoogleSignIn: () -> Unit = {}
+) {
     val context = LocalContext.current
     val authState by viewModel.authState.collectAsState()
     var isCreatingAccount by remember { mutableStateOf(false) }
@@ -207,8 +216,55 @@ fun LoginScreen(viewModel: ShoppingViewModel, onLoginSuccess: () -> Unit) {
 
         Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            // ── Google Sign-In button ──────────────────────────────────────
+            OutlinedButton(
+                onClick = onGoogleSignIn,
+                enabled = !isLoading,
+                shape = RoundedCornerShape(16.dp),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
+                    .testTag("google_sign_in_button")
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Google "G" logo en colores oficiales
+                    Text(
+                        text = "G",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF4285F4)
+                    )
+                    Text(
+                        text = "Continuar con Google",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+
+            // ── Divisor ────────────────────────────────────────────────────
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                HorizontalDivider(modifier = Modifier.weight(1f))
+                Text("o", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                HorizontalDivider(modifier = Modifier.weight(1f))
+            }
+
+            // ── Invitado ───────────────────────────────────────────────────
             Button(
                 onClick = { viewModel.continueAsGuest() },
                 enabled = !isLoading,
@@ -222,7 +278,7 @@ fun LoginScreen(viewModel: ShoppingViewModel, onLoginSuccess: () -> Unit) {
                 Text("Continuar como invitado")
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -235,7 +291,7 @@ fun LoginScreen(viewModel: ShoppingViewModel, onLoginSuccess: () -> Unit) {
                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                 )
                 Text(
-                    text = "La cuenta sincronizada usa Supabase Auth. Invitado guarda solo localmente.",
+                    text = "Google usa OAuth 2.0 seguro. Invitado guarda solo localmente.",
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     textAlign = TextAlign.Center,

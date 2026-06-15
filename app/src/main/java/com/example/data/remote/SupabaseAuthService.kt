@@ -18,4 +18,12 @@ interface SupabaseAuthService {
         @Header("apikey") apiKey: String,
         @Body request: SupabaseSignUpRequest
     ): SupabaseAuthResponse
+
+    @POST("auth/v1/token")
+    suspend fun signInWithIdToken(
+        @Header("apikey") apiKey: String,
+        @Query("grant_type") grantType: String = "id_token",
+        @Body body: Map<String, String>
+    ): SupabaseAuthResponse
 }
+

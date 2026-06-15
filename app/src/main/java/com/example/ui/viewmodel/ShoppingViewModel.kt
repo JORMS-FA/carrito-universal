@@ -6,6 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.local.AppDatabase
 import com.example.data.local.ProductEntity
+import com.example.data.remote.GeminiApiKeyProvider
 import com.example.data.repository.AuthRepository
 import com.example.data.repository.ProductRepository
 import com.example.util.NotificationHelper
@@ -57,6 +58,7 @@ class ShoppingViewModel(application: Application) : AndroidViewModel(application
     fun updateGeminiApiKey(apiKey: String) {
         sessionManager.setGeminiApiKey(apiKey)
         _geminiApiKey.value = apiKey.trim()
+        GeminiApiKeyProvider.apiKey = apiKey.trim()
     }
 
     fun updateLanguage(language: String) {
@@ -103,8 +105,9 @@ class ShoppingViewModel(application: Application) : AndroidViewModel(application
     val extractionState: StateFlow<ExtractionUiState> = _extractionState.asStateFlow()
 
     init {
-        // Initialize notifications and load session
+        // Initialize notifications, load session, and sync Gemini key
         NotificationHelper.createNotificationChannel(application)
+        GeminiApiKeyProvider.apiKey = sessionManager.getGeminiApiKey().trim()
         checkActiveSession()
     }
 
@@ -134,6 +137,12 @@ class ShoppingViewModel(application: Application) : AndroidViewModel(application
         authRepository.continueAsGuest()
         checkActiveSession()
         _authState.value = AuthUiState.Success
+    }
+
+    fun signInWithGoogle(idToken: String) {
+        authenticate {
+            authRepository.signInWithGoogle(idToken)
+        }
     }
 
     fun clearAuthState() {

@@ -16,6 +16,13 @@
 local.properties
 .env
 debug.keystore
+debug.keystore.base64
+client_secret_*.json
+.release-secrets/
+my-upload-key.jks
+config/.env
+config/*.keystore
+_archived/
 
 # Compiled APK / AAB outputs — never track binaries in Git
 *.apk

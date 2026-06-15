@@ -164,28 +164,41 @@ fun ProductDetailScreen(
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Hero Large Image Banner
+            // Hero Large Image Banner with premium aspect-ratio handling
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(260.dp)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {
+                // Blurred cropped background layer for padding fill
                 AsyncImage(
                     model = product.imageUrl,
-                    contentDescription = product.title,
+                    contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Crop,
+                    alpha = 0.25f
                 )
                 
-                // Dim Overlay
+                // Dim Overlay for badge readability
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(
                             Brush.verticalGradient(
-                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.5f))
+                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.4f))
                             )
                         )
+                )
+
+                // High-fidelity centered product image displaying full details
+                AsyncImage(
+                    model = product.imageUrl,
+                    contentDescription = product.title,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(vertical = 12.dp, horizontal = 48.dp),
+                    contentScale = ContentScale.Fit
                 )
 
                 // Metadata Float Badge

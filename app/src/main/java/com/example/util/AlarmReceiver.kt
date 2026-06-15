@@ -26,7 +26,7 @@ class AlarmReceiver : BroadcastReceiver() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val notificationBuilder = NotificationCompat.Builder(context, "shopwise_purchase_reminders")
+        val notificationBuilder = NotificationCompat.Builder(context, "carrito_universal_purchase_reminders")
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle(title)
             .setContentText(message)

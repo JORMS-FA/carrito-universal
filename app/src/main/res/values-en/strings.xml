@@ -1,0 +1,62 @@
+<resources>
+    <string name="app_name">Carrito Universal</string>
+    <string name="share_intent_label">add to my cart</string>
+
+    <!-- Navigation -->
+    <string name="nav_wishes">Wishes</string>
+    <string name="nav_compare">Compare</string>
+    <string name="nav_alerts">Alerts</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_hello">Hello, %1$s</string>
+    <string name="dashboard_title">My wishes</string>
+    <string name="dashboard_budget">BUDGET</string>
+    <string name="dashboard_budget_sub">Estimated total value</string>
+    <string name="dashboard_urgents">URGENT</string>
+    <string name="dashboard_saved">SAVED</string>
+    <string name="dashboard_compare_title">Smart Comparator</string>
+    <string name="dashboard_compare_sub_empty">Compare based on value</string>
+    <string name="dashboard_compare_sub_count">%1$d Saved Categories</string>
+    <string name="dashboard_empty_title">No products in this selection</string>
+    <string name="dashboard_empty_sub">Press the + button to save a new product.</string>
+    <string name="dashboard_sort_recent">Recent Date</string>
+    <string name="dashboard_sort_price_high">Highest Price</string>
+    <string name="dashboard_sort_price_low">Lowest Price</string>
+    <string name="dashboard_sort_ai_score">AI Score</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_profile_guest_subtitle">Local mode without sync</string>
+    <string name="settings_profile_guest_badge">Local Guest</string>
+    <string name="settings_profile_synced_badge">Synced with Supabase</string>
+    <string name="settings_section_config">Configuration</string>
+    <string name="settings_theme_card_title">Appearance and Colors</string>
+    <string name="settings_theme_card_sub">One UI 8.5 Style • Adaptive Palette</string>
+    <string name="settings_theme_mode">SCREEN MODE</string>
+    <string name="settings_theme_mode_default">System Default</string>
+    <string name="settings_theme_mode_light">Light</string>
+    <string name="settings_theme_mode_dark">Dark</string>
+    <string name="settings_theme_accent">ACCENT PALETTE (EXPRESSIVE M3)</string>
+    <string name="settings_theme_dynamic_msg">✨ Android 12+ Adaptive Palette active. Dynamic colors synchronized by system.</string>
+    
+    <string name="settings_sync_title">Account Synchronization</string>
+    <string name="settings_sync_desc_guest">This profile saves products only on the device.</string>
+    <string name="settings_sync_desc_user">This profile is ready to sync products with Supabase and the future web version.</string>
+    
+    <string name="settings_lang_title">Language</string>
+    <string name="settings_lang_desc">English</string>
+    <string name="settings_lang_toast">Language changed. Applying translations.</string>
+    
+    <string name="settings_gemini_title">Gemini API Key</string>
+    <string name="settings_gemini_desc_empty">Add your personal Google AI Studio key to activate smart analysis.</string>
+    <string name="settings_gemini_desc_configured">Key configured on this device.</string>
+    
+    <string name="settings_about_title">About Carrito Universal</string>
+    <string name="settings_about_desc">Version 1.0.0. Built with Jetpack Compose and Material 3.</string>
+    
+    <string name="settings_logout_guest">Exit guest mode</string>
+    <string name="settings_logout_user">Log out</string>
+    <string name="settings_logout_desc">Removes local session from this device.</string>
+    <string name="settings_logout_toast">Session closed</string>
+</resources>

@@ -13,15 +13,16 @@ Carrito Universal es una app Android para guardar productos, analizarlos con IA 
 
 ## Configuracion
 
-Crea un archivo `.env` en la raiz:
+Crea un archivo `config/.env` para tus variables locales:
 
 ```env
 GEMINI_API_KEY=USER_CONFIGURED_IN_APP
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=your-publishable-key
+GOOGLE_WEB_CLIENT_ID=your-web-client-id.apps.googleusercontent.com
 ```
 
-La clave Gemini no se comparte globalmente: cada usuario la agrega dentro de la app en `Ajustes > Clave Gemini API`.
+La plantilla base vive en `config/.env.example`. La clave Gemini no se comparte globalmente: cada usuario la agrega dentro de la app en `Ajustes > Clave Gemini API`.
 
 ## Supabase
 
