@@ -38,7 +38,7 @@ jobs:
           cache-cleanup: never
 
       - name: Build debug APK
-        run: gradle :app:assembleDebug --no-daemon
+        run: gradle :app:assembleDebug
 
       - name: Upload debug APK as artifact
         uses: actions/upload-artifact@v7
