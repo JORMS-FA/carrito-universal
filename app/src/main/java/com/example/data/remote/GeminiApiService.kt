@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 import okhttp3.Request
 
 interface GeminiApiService {
-    @POST("v1beta/models/gemini-3.5-flash:generateContent")
+    @POST("v1beta/models/gemini-2.5-flash:generateContent")
     suspend fun generateContent(
         @Body request: MoshiGenerateContentRequest
     ): MoshiGenerateContentResponse

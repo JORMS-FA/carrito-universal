@@ -33,7 +33,7 @@ La plantilla base vive en `config/.env.example`. La clave Gemini no se comparte 
 ## APK Local
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\build-local.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\build-local.ps1
 ```
 
 El APK queda en:

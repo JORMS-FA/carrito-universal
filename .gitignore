@@ -13,18 +13,15 @@
 /captures
 .externalNativeBuild
 .cxx
-local.properties
 .env
 debug.keystore
-debug.keystore.base64
-client_secret_*.json
-.release-secrets/
 my-upload-key.jks
 config/.env
 config/*.keystore
-_archived/
+icono carrito universal/
+app/schemas/
 
-# Compiled APK / AAB outputs — never track binaries in Git
+# Compiled APK / AAB outputs
 *.apk
 *.aab
 .build-outputs/
